@@ -1,7 +1,8 @@
+import os
+
 from flask import Flask
 from flask_restful import Api
 from flask_jwt import JWT
-
 
 from security import authenticate,identify
 from resources.user import UserRegister
@@ -13,7 +14,7 @@ upload_folder = '/images'
 allowed_extensions = ['png','jpg']
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///data.db')
 app.config['UPLOAD_FOLDER'] = upload_folder
 # do not track through flask SQLAlchemy's tracker, but through SQLAlchemy's
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
