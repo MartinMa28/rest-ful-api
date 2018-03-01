@@ -18,8 +18,8 @@ class Score(Resource):
     def post(self):
         request_data = Score.parser.parse_args()
         messages = MessageModel.get_messages_by_session_id(request_data['session_id'])
-        for m in messages:
-            print(m.value)
+        # for m in messages:
+        #     print(m.value)
 
         user_id = Score.register_userid()
         [d_total_result, d_length_result] = Score.parse_txt(messages,user_id)
@@ -28,7 +28,7 @@ class Score(Resource):
         v_std = np.load('v_std.npy')
         v_diary = Score.vectorize(d_analyzed_result)
         final_result = Score.grade(v_diary, v_std)
-        print(np.sum(final_result, axis=1))
+        #print(np.sum(final_result, axis=1))
         emotion_score = np.sum(final_result, axis=1).ravel()
         return {'score':emotion_score[0]}
 
