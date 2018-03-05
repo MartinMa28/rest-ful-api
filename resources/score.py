@@ -19,7 +19,9 @@ class Score(Resource):
         request_data = Score.parser.parse_args()
         messages = MessageModel.get_messages_by_session_id(request_data['session_id'])
 
-        user_id = Score.register_userid()
+        user_id = Score.register_userid().encode('utf-8')
+        print(user_id)
+        print(type(user_id))
         [d_total_result, d_length_result] = Score.parse_txt(messages,user_id)
 
         d_analyzed_result = Score.analyze_txt(d_total_result, d_length_result)
