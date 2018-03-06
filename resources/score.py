@@ -122,14 +122,14 @@ class Score(Resource):
 
     @classmethod
     def vectorize(cls, r):
-        v_result = np.zeros((len(r), 26))  # 26 kinds of emotion, each kind 1 bit
+        v_result = np.zeros((len(r), 27))  # 27 kinds of emotion, each kind 1 bit
         note_index = 0
         emotions_dict = Score.init_emotions_dict()
         for note in r:
             for emotion in note:
                 if emotion[3] > 59 and emotion[0] != '中性':
                     e_label = emotions_dict[emotion[0]]
-                    e_vector = np.zeros((1, 26))
+                    e_vector = np.zeros((1, 27))
                     e_vector[0, e_label] = (1 + emotion[1] / 10) * emotion[2] * emotion[3] / 100
                     v_result[note_index] = v_result[note_index] + e_vector
             note_index += 1
@@ -137,7 +137,7 @@ class Score(Resource):
 
     @classmethod
     def grade(cls, r, std):
-        final_result = np.zeros((len(r), 26))
+        final_result = np.zeros((len(r), 27))
         sentence_index = 0
         for sentence in r:
             question_index = 0
