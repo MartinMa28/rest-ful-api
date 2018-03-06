@@ -33,12 +33,12 @@ class Score(Resource):
 
     @classmethod
     def init_emotions_dict(cls):
-        emotions_handle = open('emotions.txt', 'r')
+        emotions_handle = open('emotions.txt', 'r',encoding='utf-8')
         emotions_dict = dict()
         emotion_ID = 0
         # generate emotion dictionary
         for line in emotions_handle:
-            emotion = line.decode('utf-8','ignore').rstrip()
+            emotion = line.rstrip()
             emotions_dict[emotion] = emotion_ID
             emotion_ID += 1
         return emotions_dict
