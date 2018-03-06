@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
 from flask_restful import reqparse,Resource
 from flask_jwt import jwt_required
 from models.message import MessageModel
 import numpy as np
 import requests
 import json
+
 
 class Score(Resource):
     parser = reqparse.RequestParser()
@@ -18,9 +20,8 @@ class Score(Resource):
         request_data = Score.parser.parse_args()
         messages = MessageModel.get_messages_by_session_id(request_data['session_id'])
 
-        user_id = Score.register_userid().encode('utf-8')
-        print(user_id)
-        print(type(user_id))
+        user_id = Score.register_userid()
+        print(user_id.encode(encoding = 'utf-8'))
         [d_total_result, d_length_result] = Score.parse_txt(messages,user_id)
 
         d_analyzed_result = Score.analyze_txt(d_total_result, d_length_result)
