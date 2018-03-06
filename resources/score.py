@@ -24,7 +24,7 @@ class Score(Resource):
         [d_total_result, d_length_result] = Score.parse_txt(messages,user_id)
 
         d_analyzed_result = Score.analyze_txt(d_total_result, d_length_result)
-        v_std = np.load('v_std.npy')
+        v_std = np.load('v_std27.npy')
         v_diary = Score.vectorize(d_analyzed_result)
         final_result = Score.grade(v_diary, v_std)
 
