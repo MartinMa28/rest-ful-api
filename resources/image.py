@@ -25,7 +25,7 @@ class Image(Resource):
             filename = user_id + '_' + image_id + '.jpg'
             new_image = ImageModel(str(datetime.datetime.now()),user_id)
             new_image.save_to_db()
-            destination = '\\'.join([target_dir, filename])
+            destination = '/'.join([target_dir, filename])
             print(destination)
             uploaded_file.save(destination)
             return {'url':destination}

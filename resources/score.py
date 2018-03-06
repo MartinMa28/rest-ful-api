@@ -38,7 +38,7 @@ class Score(Resource):
         emotion_ID = 0
         # generate emotion dictionary
         for line in emotions_handle:
-            emotion = line.rstrip()
+            emotion = line.decode('utf-8','ignore').rstrip()
             emotions_dict[emotion] = emotion_ID
             emotion_ID += 1
         return emotions_dict
