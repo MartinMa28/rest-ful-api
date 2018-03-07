@@ -4,7 +4,6 @@ from flask_jwt import jwt_required
 from models.message import MessageModel
 import numpy as np
 import requests
-import json
 
 
 class Score(Resource):
@@ -50,9 +49,7 @@ class Score(Resource):
         register_data = {"cmd": "register", "appid": cls.app_id}
         url = "http://idc.emotibot.com/api/ApiKey/openapi.php"
         r = requests.post(url, params=register_data)
-        #jsondata = r.json()
-        response = json.dumps(r.json(), ensure_ascii=False)
-        jsondata = json.loads(response)
+        jsondata = r.json()
 
         # Grab the part called data from the response, response_data is a list that has only one item in it.
         response_data = jsondata['data']
