@@ -1,19 +1,11 @@
-from flask_restful import Resource,reqparse
+from flask_restful import Resource
 from models.message import MessageModel
 from flask_jwt import jwt_required
+from flask import request
 import requests
 
 class Chatbot(Resource):
-    parser = reqparse.RequestParser()
-    parser.add_argument('input_text',
-                        type=str,
-                        required=True,
-                        help='This field cannot be left black'
-                        )
-    parser.add_argument('session_id',
-                        type=int,
-                        required=True,
-                        help='every message should have a session id')
+
     appID = "5a200ce8e6ec3a6506030e54ac3b970e"
 
     @classmethod
@@ -61,9 +53,11 @@ class Chatbot(Resource):
     @jwt_required()
     def post(self):
         user_id = Chatbot.register_userid()
-        request_data = Chatbot.parser.parse_args()
-        [reply_words, e_type, e_score] = Chatbot.get_response(user_id, request_data['input_text'])
-        new_message = MessageModel(request_data['input_text'],request_data['session_id'],e_type,e_score)
+
+        data = request.get_json()
+        print(type(data['input_text']),type(data['session_id']))
+        [reply_words, e_type, e_score] = Chatbot.get_response(user_id, data['input_text'])
+        new_message = MessageModel(data['input_text'],data['session_id'],e_type,e_score)
         new_message.save_to_db()
 
         return {'response':reply_words,'emotion_type':e_type,'emotion_score':e_score}, 200

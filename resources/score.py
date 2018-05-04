@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from flask_restful import reqparse,Resource
+from flask_restful import Resource
+from flask import request
 from flask_jwt import jwt_required
 from models.message import MessageModel
 import numpy as np
@@ -7,17 +8,14 @@ import requests
 
 
 class Score(Resource):
-    parser = reqparse.RequestParser()
-    parser.add_argument('session_id',
-                        type=int,
-                        required=True,
-                        help='every message should have a session id')
+
     app_id = "5a200ce8e6ec3a6506030e54ac3b970e"
 
     @jwt_required()
     def post(self):
-        request_data = Score.parser.parse_args()
-        messages = MessageModel.get_messages_by_session_id(request_data['session_id'])
+        #request_data = Score.parser.parse_args()
+        data = request.get_json()
+        messages = MessageModel.get_messages_by_session_id(data['session_id'])
 
         user_id = Score.register_userid()
         print(user_id.encode(encoding = 'utf-8'))
@@ -142,11 +140,11 @@ class Score(Resource):
             for question in std:
                 score = sentence[question > 0] / question[question > 0]
                 score = np.mean(score)
-                if score > 1.0:
+                if score > 0.7:
                     final_result[sentence_index, question_index] = 3
-                elif score > 0.6:
+                elif score > 0.4:
                     final_result[sentence_index, question_index] = 2
-                elif score > 0.3:
+                elif score > 0.2:
                     final_result[sentence_index, question_index] = 1
                 question_index += 1
             sentence_index += 1
