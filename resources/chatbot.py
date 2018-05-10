@@ -50,13 +50,70 @@ class Chatbot(Resource):
 
         return [reply_words,emotion_type,emotion_score]
 
+    @classmethod
+    def stripString(cls,b_str):
+        # remove all of % from android request
+        new_str = str()
+        ind_str = 0
+        while True:
+            if b_str[ind_str] == '%':
+                # find the next %
+                next_pos = b_str.find('%', ind_str + 1)
+                if next_pos == -1:
+                    # at the end of the string, doesn't have any more %
+                    new_str = new_str + b_str[ind_str + 1:]
+                    break
+                new_str = new_str + b_str[ind_str + 1:next_pos]
+                ind_str = next_pos
+
+        return new_str
+
+    @classmethod
+    def castToDecimal(cls,h_str):
+        d_list = list()
+        ind_str = 0
+        while ind_str < len(h_str):
+            # convert every 2 character in the string into a decimal number
+            # and put all of decimal numbers into a list
+            temp_str = h_str[ind_str:ind_str + 2]
+            d_list.append(int(temp_str, base=16))
+            ind_str += 2
+
+        return d_list
+
+    @classmethod
+    def castToBytes(cls,d_list):
+        # convert the decimal numbers into bytes, every decimal number corresponds to a hexadecimal number
+        b_list = list()
+        for num in d_list:
+            b_list.append(bytes([num]))
+
+        # concantenate bytes into a stream
+        b_chars = bytes()
+        for b_char in b_list:
+            b_chars = b_chars + b_char
+
+        return b_chars
+
+    @classmethod
+    def manualDecode(cls,b_str):
+        h_str = Chatbot.stripString(b_str)
+        d_str = Chatbot.castToDecimal(h_str)
+        b_chars = Chatbot.castToBytes(d_str)
+        return b_chars.decode(encoding='utf-8')
+
     @jwt_required()
     def post(self):
         user_id = Chatbot.register_userid()
 
         data = request.get_json()
-        print(type(data['input_text']),type(data['session_id']))
-        [reply_words, e_type, e_score] = Chatbot.get_response(user_id, data['input_text'])
+        print(data['input_text'])
+        #print(type(data['input_text']),type(data['session_id']))
+        if data['input_text'].startswith('%'):
+            input_text = Chatbot.manualDecode(data['input_text'])
+        else:
+            input_text = data['input_text']
+        [reply_words, e_type, e_score] = Chatbot.get_response(user_id, input_text)
         new_message = MessageModel(data['input_text'],data['session_id'],e_type,e_score)
         new_message.save_to_db()
 
