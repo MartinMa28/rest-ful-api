@@ -1,0 +1,7 @@
+1_1.jpg anger
+1_2.jpg fear
+1_3.jpg happy
+1_4.jpg disgust
+pangyunsheng.jpg normal
+pangyunsheng.jpg normal
+1_1.jpg normal

@@ -13,20 +13,32 @@ class Score(Resource):
 
     @jwt_required()
     def post(self):
-        #request_data = Score.parser.parse_args()
         data = request.get_json()
         messages = MessageModel.get_messages_by_session_id(data['session_id'])
 
+
+
+        ui_id = str(data['user_id'])+'_'+str(data['image_id'])
+        image_emotion_dict = Score.get_image_emotion_dict()
+        try:
+            image_emotion = image_emotion_dict[ui_id]
+        except:
+            print("doesn't have corresponding image")
+            image_emotion = '中性'
+
+
+
         user_id = Score.register_userid()
-        print(user_id.encode(encoding = 'utf-8'))
+        #print(user_id.encode(encoding = 'utf-8'))
         [d_total_result, d_length_result] = Score.parse_txt(messages,user_id)
+
 
         d_analyzed_result = Score.analyze_txt(d_total_result, d_length_result)
         v_std = np.load('v_std27.npy')
-        v_diary = Score.vectorize(d_analyzed_result)
+        v_diary = Score.vectorize(d_analyzed_result,image_emotion)
         final_result = Score.grade(v_diary, v_std)
 
-        emotion_score = np.sum(final_result, axis=1).ravel()
+        emotion_score = np.sum(final_result).ravel()
         return {'score':emotion_score[0]}
 
     @classmethod
@@ -117,7 +129,7 @@ class Score(Resource):
         return analyzed_result
 
     @classmethod
-    def vectorize(cls, r):
+    def vectorize(cls, r, i_emotion):
         v_result = np.zeros((len(r), 27))  # 27 kinds of emotion, each kind 1 bit
         note_index = 0
         emotions_dict = Score.init_emotions_dict()
@@ -129,6 +141,12 @@ class Score(Resource):
                     e_vector[0, e_label] = (1 + emotion[1] / 10) * emotion[2] * emotion[3] / 100
                     v_result[note_index] = v_result[note_index] + e_vector
             note_index += 1
+
+        # image emotion from here
+        i_e_label = emotions_dict[i_emotion]
+        i_e_vector = np.ones((1,len(r)))
+        v_result[:,i_e_label] = v_result[:,i_e_label] + i_e_vector
+
         return v_result
 
     @classmethod
@@ -137,15 +155,49 @@ class Score(Resource):
         sentence_index = 0
         for sentence in r:
             question_index = 0
+            if sentence[21] >= 1:
+                final_result[sentence_index, 16] = 3
+                print('angry')
+            elif sentence[22] >= 1:
+                final_result[sentence_index, 2:3] = 3
+                print('sad')
+            elif sentence[8] >= 1:
+                final_result[sentence_index, 6:7] = 3
+                final_result[sentence_index, 11] = 3
+                print('disgust')
+            elif sentence[26] >= 1:
+                final_result[sentence_index, 12] = 3
+                print('fear')
             for question in std:
                 score = sentence[question > 0] / question[question > 0]
                 score = np.mean(score)
                 if score > 0.7:
                     final_result[sentence_index, question_index] = 3
-                elif score > 0.4:
+                elif score > 0.3:
                     final_result[sentence_index, question_index] = 2
                 elif score > 0.2:
                     final_result[sentence_index, question_index] = 1
                 question_index += 1
             sentence_index += 1
-        return final_result
+        return final_result/np.size(final_result,axis=0)
+
+    @classmethod
+    def get_image_emotion_dict(cls):
+        f_handler = open('image_expression.txt', 'r')
+        translate_dict = {
+            'anger': '生气',
+            'disgust': '厌恶',
+            'fear': '害怕',
+            'happy': '开心',
+            'sad': '难过',
+            'surprised': '惊讶',
+            'normal': '中性'
+        }
+        image_expression_dict = dict()
+        for line in f_handler:
+            line_list = line.rstrip().split()
+            ui_id = (line_list[0])[:-4]
+            emotion_type = translate_dict[line_list[1]]
+            image_expression_dict[ui_id] = emotion_type
+
+        return image_expression_dict

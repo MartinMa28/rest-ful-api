@@ -107,7 +107,7 @@ class Chatbot(Resource):
         user_id = Chatbot.register_userid()
 
         data = request.get_json()
-        print(data['input_text'])
+        #print(data['input_text'])
         #print(type(data['input_text']),type(data['session_id']))
         if data['input_text'].startswith('%'):
             input_text = Chatbot.manualDecode(data['input_text'])
